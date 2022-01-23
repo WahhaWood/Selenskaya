@@ -1,5 +1,4 @@
 
-from turtle import color
 import disnake
 from disnake.ext import commands
 from pymongo import MongoClient
