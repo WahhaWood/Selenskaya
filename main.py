@@ -82,7 +82,7 @@ async def c_create(ctx,*, name: str = None):
 	
 	
 @bot.command(aliases=['c-info'])
-async def c_info(ctx,*, name):
+async def c_info(ctx,*, name: str = None):
 	channel_obj = channels.find_one({"name": "Selenskaya"})
 	if ctx.channel.id in channel_obj["channels"]:
 		return await ctx.send(embed = disnake.Embed(
@@ -90,7 +90,7 @@ async def c_info(ctx,*, name):
 			description="Вы не можете использовать бота в этом канале! \n `Администрация запретила использовать бота в этом канале`",
 			color = disnake.Colour.red()
 		))
-
+	
 	if not name:
 		return await ctx.send(embed = disnake.Embed(
 			title=":x: Возникла ошибка :x:",
