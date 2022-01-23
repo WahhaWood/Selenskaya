@@ -1,2 +1,2 @@
-disnake==4.0.0
+disnake==3.7.10
 pymongo==4.0.1
