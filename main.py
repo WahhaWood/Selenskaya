@@ -1,4 +1,5 @@
 
+from turtle import color
 import disnake
 from disnake.ext import commands
 from pymongo import MongoClient
@@ -71,7 +72,8 @@ async def c_create(ctx,*, name: str = None):
     			"name": name,
     			"rep": 0,
     			"owner": ctx.author.id,
-    			"members": []
+    			"members": [],
+				"invite": "allow"
 			}
 		clans.insert_one(post)
 		await ctx.send(embed = disnake.Embed(
@@ -272,28 +274,52 @@ async def c_delete(ctx,*, name: str = None):
 
 @bot.command(aliases=['c-perm'])
 async def c_perm(ctx, bbc, channel):
-	if bbc == 'allow':
-		channel_name = int(channel.strip("<#>"))
-		name = "Selenskaya"
-		channels_arr = channels.find_one({"name": name})['channels']
-		channels_arr.remove(channel_name)
-		channels.update_one({"name": name}, {"$set":{"channels": channels_arr}})
+	channel_name = int(channel.strip("<#>"))
+	name = "Selenskaya"
+	channels_arr = channels.find_one({"name": name})['channels']
+
+	if not channel or bbc:
 		return await ctx.send(embed = disnake.Embed(
-		title=":white_check_mark: Все прошло успешно :white_check_mark:",
-		description = f"Вы убрали <#{channel_name}> из списка заблокированых канналов",
-		color = disnake.Colour.green()))
+			title=":x: Возникла ошибка :x:",
+			description="Вы не указали название клана! \n **Использование** \n > ` =c-perm deny [Пинг канала]` \n **Пример** \n > ` =c-perm allow [Пинг канала]`",
+			color = disnake.Colour.red()
+				))
+
+	if bbc == 'allow':
+		if channel_name in channels_arr:
+			return await ctx.send(embed = disnake.Embed(
+			title=":x: Возникла ошибка :x:",
+			description="Этого канала нету в списке заблокированных!",
+			color = disnake.Color.red()))
+
+		else:
+			channel_name = int(channel.strip("<#>"))
+			name = "Selenskaya"
+			channels_arr = channels.find_one({"name": name})['channels']
+			channels_arr.remove(channel_name)
+			channels.update_one({"name": name}, {"$set":{"channels": channels_arr}})
+			return await ctx.send(embed = disnake.Embed(
+			title=":white_check_mark: Все прошло успешно :white_check_mark:",
+			description = f"Вы убрали <#{channel_name}> из списка заблокированых канналов",
+			color = disnake.Colour.green()))
 
 	if bbc == 'deny':
-		channel_name = int(channel.strip("<#>"))
-		name = "Selenskaya"
-		channels_arr = channels.find_one({"name": name})['channels']
-		channels_arr.append(channel_name)
-		channels.update_one({"name": name}, {"$set":{"channels": channels_arr}})
-		return await ctx.send(embed = disnake.Embed(
-            title=":white_check_mark: Все прошло успешно :white_check_mark:",
-            description = f"Вы добавили <#{channel_name}> в список заблокированых канналов",
-            color = disnake.Colour.purple()))
-		
+		if channel_name in channels_arr:
+			return await ctx.send(embed = disnake.Embed(
+			title=":x: Возникла ошибка :x:",
+			description="Этот канал уже в списке заблокированных!",
+			color = disnake.Color.red()))
+		else:
+			channel_name = int(channel.strip("<#>"))
+			name = "Selenskaya"
+			channels_arr = channels.find_one({"name": name})['channels']
+			channels_arr.append(channel_name)
+			channels.update_one({"name": name}, {"$set":{"channels": channels_arr}})
+			return await ctx.send(embed = disnake.Embed(
+        		title=":white_check_mark: Все прошло успешно :white_check_mark:",
+        		description = f"Вы добавили <#{channel_name}> в список заблокированых канналов",
+        		color = disnake.Colour.purple()))
+	
 
 @bot.command(aliases=['c-listfasfas'])
 async def c_list(ctx, *, name = None):
@@ -344,8 +370,9 @@ async def c_help(ctx):
 	
 	return await ctx.send(embed = disnake.Embed(
 		title="📋 | Список команд",
-		description="`=c-create` - создать клан \n `=c-info` - узнать информацию о клане \n `=c-join` - присоидениться к клану \n `=c-top` - топ кланов на сервере \n `=c-leave` - выйти из клана  \n `=c-delete` - удалить клан \n **Только для администрации** \n `=c-perm` - настройка запрета бота в некоторых каналах \n ",
+		description="`=c-create` - создать клан \n `=c-info` - узнать информацию о клане \n `=c-join` - присоидениться к клану \n `=c-top` - топ кланов на сервере \n `=c-leave` - выйти из клана  \n `=c-delete` - удалить клан \n \n **Только для администрации:** \n `=c-perm` - настройка запрета бота в некоторых каналах \n ",
 		color= disnake.Colour.green()
 	))
+
 
 bot.run(con.BOT_TOKEN)
