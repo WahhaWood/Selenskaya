@@ -332,4 +332,20 @@ async def c_list(ctx, *, name = None):
 
 	await ctx.send(embed=embed)
 
+@bot.command(aliases=['c-help'])
+async def c_help(ctx):
+	channel_obj = channels.find_one({"name": "Selenskaya"})
+	if ctx.channel.id in channel_obj["channels"]:
+		return await ctx.send(embed = disnake.Embed(
+			title=":x: Возникла ошибка :x:",
+			description="Вы не можете использовать бота в этом канале! \n `Администрация запретила использовать бота в этом канале`",
+			color = disnake.Colour.red()
+		))
+	
+	return await ctx.send(embed = disnake.Embed(
+		title="📋 | Список команд",
+		description="`=c-create` - создать клан \n `=c-info` - узнать информацию о клане \n `=c-join` - присоидениться к клану \n `=c-top` - топ кланов на сервере \n `=c-leave` - выйти из клана  \n `=c-delete` - удалить клан \n **Только для администрации** \n `=c-perm` - настройка запрета бота в некоторых каналах \n ",
+		color= disnake.Colour.green()
+	))
+
 bot.run(con.BOT_TOKEN)
