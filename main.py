@@ -486,7 +486,7 @@ async def c_requests(ctx,*, name: str = None):
 
 @bot.command(aliases=['c-accept'])
 async def c_accept(ctx,*,nik, name: str = None):
-	if clans.find_one({"name": name})["owner"] == ctx.message.author.id:
+	if clans.find_one({"name": name})["owner"] == ctx.message.author.id or clans.find_one({"name": name})["zam"] == ctx.message.author.name:
 		if nik not in clans.find_one({'name': name})['invites']:
 			return await ctx.send(embed = disnake.Embed(
 			title=":x: Возникла ошибка :x:",
@@ -538,7 +538,7 @@ async def c_decline(ctx, nik, name):
 			color = disnake.Colour.red()))
 
 	invite_arr = clans.find_one({"name": name})
-	if clans.find_one({"name": name})["owner"] == ctx.author.id:
+	if clans.find_one({"name": name})["owner"] == ctx.author.id or clans.find_one({"name": name})["zam"] == ctx.message.author.name:
 		if nik in invite_arr['invites']:
 			await ctx.send(embed = disnake.Embed(
 			title=":white_check_mark: Все прошло успешно :white_check_mark:",
