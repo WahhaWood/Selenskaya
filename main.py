@@ -10,7 +10,6 @@ db = cluster.botdb
 coll = db.clans
 clans = cluster.botdb.clans
 channels = cluster.botdb.channels
-invites = cluster.botdb.invites
 repa = "🔰"
 p = "*"
 
@@ -22,7 +21,7 @@ async def on_ready():
 async def on_message(message):
 	await bot.process_commands( message )
 	if clans.find_one({"members": message.author.name}):
-		coll.update_one({"members": message.author.name}, {'$inc': {'rep': 0.5}})
+		coll.update_one({"members": message.author.name}, {'$inc': { 'rep': 0.5}})
 	if clans.find_one({"owner": message.author.id}):
 		coll.update_one({"owner": message.author.id}, {'$inc': {'rep': 0.5}})
 
@@ -74,15 +73,11 @@ async def c_create(ctx,*, name: str = None):
     			"rep": 0,
     			"owner": ctx.author.id,
     			"members": [],
-				"invite": "allow"
-			}
-
-		post_2 = {
-    			"name": name,
-    			"invites":[]
+				"invite": "allow",
+				"invites":[],
+				"zam": "ok"
 			}
 		clans.insert_one(post)
-		invites.insert_one(post_2)
 		await ctx.send(embed = disnake.Embed(
     		title=":white_check_mark: Все прошло успешно :white_check_mark:",
 			description=f"Клан **{name}** успешно создан!\n**Узнать информацию о клане**\n> `{p}c-info {name}` ",
@@ -114,12 +109,20 @@ async def c_info(ctx,*, name: str = None):
 			description="Клана с таким названием не существует!",
 			color = disnake.Colour.red()
 				))
-
+	if clans.find_one({"name": name})["zam"] == "ok":
+		clan_obj = clans.find_one({"name": name})
+		okay = len(coll.find_one({"name": name})['members'])
+		embed = disnake.Embed(title = name,color = disnake.Colour.blue())
+		embed.add_field(name="💠 Владелец", value= f"> {ctx.guild.get_member(clan_obj['owner'])}", inline=False)
+		embed.add_field(name="👥 Всего участников", value= f"> {okay}", inline=False)
+		embed.add_field(name=f"{repa} Репутация", value = f"> {clan_obj['rep'] if clan_obj['rep'] else '0'} {repa}" , inline=False)
+		return await ctx.send(embed=embed)
 
 	clan_obj = clans.find_one({"name": name})
 	okay = len(coll.find_one({"name": name})['members'])
 	embed = disnake.Embed(title = name,color = disnake.Colour.blue())
 	embed.add_field(name="💠 Владелец", value= f"> {ctx.guild.get_member(clan_obj['owner'])}", inline=False)
+	embed.add_field(name="🔘 Заместитель владельца", value= f"> {clan_obj['zam']}", inline = False) 
 	embed.add_field(name="👥 Всего участников", value= f"> {okay}", inline=False)
 	embed.add_field(name=f"{repa} Репутация", value = f"> {clan_obj['rep'] if clan_obj['rep'] else '0'} {repa}" , inline=False)
 	return await ctx.send(embed=embed)
@@ -140,6 +143,14 @@ async def c_join(ctx,*, name: str = None):
 			description=f"Вы не указали название клана! \n **Использование** \n> `{p}c-join [Название клана]` \n **Пример** \n> `{p}c-join Selenskaya`",
 			color = disnake.Colour.red()
 				))
+
+	if clans.count_documents({"owner": ctx.author.id}) or clans.count_documents({"members": ctx.author.name}):
+		return await ctx.send(embed = disnake.Embed(
+			title=":x: Возникла ошибка :x:",
+			description="Вы уже состоите в клане! \n `Покиньте клан перед использованием этой команды`",
+			color = disnake.Colour.red()
+				))
+
 	clan_obj = clans.find_one({"name": name})
 	if not clan_obj:
 		return await ctx.send(embed = disnake.Embed(
@@ -153,14 +164,6 @@ async def c_join(ctx,*, name: str = None):
 			description=f"Используйте команду: \n> `{p}c-invite {name}`",
 			color = disnake.Colour.red()
 				))
-
-	if clans.count_documents({"owner": ctx.author.id}) or clans.count_documents({"members": ctx.author.name}):
-		return await ctx.send(embed = disnake.Embed(
-			title=":x: Возникла ошибка :x:",
-			description="Вы уже состоите в клане! \n `Покиньте клан перед использованием этой команды`",
-			color = disnake.Colour.red()
-				))
-
 
 
 	if clans.find_one({"name": name})['invite'] == 'allow':
@@ -421,7 +424,7 @@ async def c_invite(ctx,*, name: str = None):
 				))
 
 
-	if invites.count_documents({'invites': ctx.message.author.name}):
+	if clans.count_documents({'invites': ctx.message.author.name}):
 		return await ctx.send(embed = disnake.Embed(
 			title=":x: Возникла ошибка :x:",
 			description="Вы уже отправили запрос в один из кланов",
@@ -435,16 +438,16 @@ async def c_invite(ctx,*, name: str = None):
 			color = disnake.Colour.red()
 				))
 
-	if ctx.message.author.name in invites.find_one({"name": name})['invites']:
+	if ctx.message.author.name in clans.find_one({"name": name})['invites']:
 		return await ctx.send(embed = disnake.Embed(
 			title=":x: Возникла ошибка :x:",
 			description="Вы уже отправили запрос в этот клан",
 			color = disnake.Colour.red()
 				))
 
-	invites_obj = invites.find_one({"name":name})
+	invites_obj = clans.find_one({"name":name})
 	invites_obj['invites'].append(ctx.author.name)
-	invites.update_one({"name": name}, {"$set":{'invites': invites_obj['invites']}})
+	clans.update_one({"name": name}, {"$set":{'invites': invites_obj['invites']}})
 	await ctx.send(embed = disnake.Embed(
 			title=":white_check_mark: Все прошло успешно :white_check_mark:",
 			description=f"Вы успешно отправили заявку в клан **{name}**!",
@@ -474,7 +477,7 @@ async def c_requests(ctx,*, name: str = None):
 			description="Клана с таким названием не существует! ",
 			color = disnake.Colour.red()))
 
-	invite = "\n".join(invites.find_one({"name": name})['invites'])
+	invite = "\n".join(clans.find_one({"name": name})['invites'])
 	return await ctx.send(embed = disnake.Embed(
 	title=f"**Список заявок в {name}**",
 	description=f"{invite if invite else 'Тут пусто'}",
@@ -484,7 +487,7 @@ async def c_requests(ctx,*, name: str = None):
 @bot.command(aliases=['c-accept'])
 async def c_accept(ctx,*,nik, name: str = None):
 	if clans.find_one({"name": name})["owner"] == ctx.message.author.id:
-		if nik not in invites.find_one({'name': name})['invites']:
+		if nik not in clans.find_one({'name': name})['invites']:
 			return await ctx.send(embed = disnake.Embed(
 			title=":x: Возникла ошибка :x:",
 			description=f"Человек с ником **{nik}** не отправял заявку в клан **{name}**!",
@@ -534,7 +537,7 @@ async def c_decline(ctx, nik, name):
 			description="Клана с таким названием не существует! ",
 			color = disnake.Colour.red()))
 
-	invite_arr = invites.find_one({"name": name})
+	invite_arr = clans.find_one({"name": name})
 	if clans.find_one({"name": name})["owner"] == ctx.author.id:
 		if nik in invite_arr['invites']:
 			await ctx.send(embed = disnake.Embed(
@@ -543,7 +546,7 @@ async def c_decline(ctx, nik, name):
 			color = disnake.Colour.green()
 				))
 			invite_arr['invites'].remove(nik)
-			invites.update_one({"name": name}, {"$set":{"invites": invite_arr['invites']}})
+			clans.update_one({"name": name}, {"$set":{"invites": invite_arr['invites']}})
 
 		else: 
 			return await ctx.send(embed = disnake.Embed(
@@ -558,6 +561,57 @@ async def c_decline(ctx, nik, name):
 				description=f"Вы не можете отклонить заявку **{nik}**!",
 				color = disnake.Colour.red()))
 			
+@bot.command(aliases=['c-deputy'])
+async def c_deputy(ctx, nik, name):
+	channel_obj = channels.find_one({"name": "Selenskaya"})
+	if ctx.channel.id in channel_obj["channels"]:
+		return await ctx.send(embed = disnake.Embed(
+			title=":x: Возникла ошибка :x:",
+			description="Вы не можете использовать бота в этом канале! \n `Администрация запретила использовать бота в этом канале`",
+			color = disnake.Colour.red()
+		))
 
+	if not name:
+		return await ctx.send(embed = disnake.Embed(
+			title=":x: Возникла ошибка :x:",
+			description=f"Вы не указали название клана! \n **Использование** \n> `{p}c-deputy [Ник участника] [Название клана]` \n **Пример** \n> `{p}c-deputy Wahha Selenskaya`",
+			color = disnake.Colour.red()
+				))
+
+	if not nik:
+		return await ctx.send(embed = disnake.Embed(
+			title=":x: Возникла ошибка :x:",
+			description=f"Вы не указали ник участника! \n **Использование** \n> `{p}c-deputy [Ник участника] [Название клана]` \n **Пример** \n> `{p}c-deputy Wahha Selenskaya`",
+			color = disnake.Colour.red()
+				))
+
+	if not clans.find_one({"name": name}):
+		return await ctx.send(embed = disnake.Embed(
+			title=":x: Возникла ошибка :x:",
+			description="Клана с таким названием не существует! ",
+			color = disnake.Colour.red()))
+
+	invite_arr = clans.find_one({"name": name})
+	if clans.find_one({"name": name})["owner"] == ctx.author.id:
+		if nik in invite_arr['members']:
+			await ctx.send(embed = disnake.Embed(
+			title=":white_check_mark: Все прошло успешно :white_check_mark:",
+			description=f"Вы успешно сделали **{nik}** заместителем!",
+			color = disnake.Colour.green()
+				))
+			clans.update_one({"name": name}, {"$set":{"zam": nik}})
+
+		else: 
+			return await ctx.send(embed = disnake.Embed(
+				title=f":x: Возникла ошибка :x:",
+				description=f"Вы не можете сделать **{nik}** заместителем!",
+				color = disnake.Colour.red()))
+			
+	
+	else: 
+			return await ctx.send(embed = disnake.Embed(
+				title=f":x: Возникла ошибка :x:",
+				description=f"Вы не можете сделать **{nik}** заместителем!",
+				color = disnake.Colour.red()))
 
 bot.run(con.BOT_TOKEN)
